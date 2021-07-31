@@ -19,8 +19,8 @@ reddit = praw.Reddit(client_id=CLIENT_ID, client_secret= Redd, user_agent=USER_A
 
 # !! CHANGE TO CONFIGURE SCRAPER
 time_frame = 'month'       #Change time frame to pull if applicable
-number_of_posts = 250     #Change number of posts to scrape
-sub_to_scrape = 'Superstonk' #Change sub to scrape
+number_of_posts = 100     #Change number of posts to scrape
+sub_to_scrape = 'MurderedByAOC' #Change sub to scrape
 sub_filter = 'top'  #Able to be changed between {top, hot, new, rising}
 
 
@@ -60,7 +60,7 @@ def scraper(sub_filter):
 
 scraper(sub_filter)
 
-comment_username_flair_dict = {}
+comment_username_dict = {}
 # a function that take in a Url from the post submissions and returns the comment author and flair
 def comment_pull(post_url):
     submission = reddit.submission(url=post_url)
@@ -68,10 +68,10 @@ def comment_pull(post_url):
     for comment in submission.comments.list():
         if isinstance(comment, MoreComments):
             continue
-        if comment.author in comment_username_flair_dict:
+        #if comment.body in comment_username_dict:
             continue
         else:
-            comment_username_flair_dict[comment.author] = comment.author_flair_text
+            comment_username_dict[comment.author] = comment.body
 
 def scrape_posts(post_list):
     for index, post in enumerate(post_list):
@@ -84,14 +84,14 @@ def scrape_posts(post_list):
 
 def vote_counter():
     vote_count = 0
-    for value in comment_username_flair_dict.values():
+    for value in comment_username_dict.values():
         if value == '🦍 Voted ✅':
             vote_count +=1
     return vote_count
 
 def flair_counter():
     flair_dict = {}
-    for flair in comment_username_flair_dict.values():
+    for flair in comment_username_dict.values():
         
         if flair not in flair_dict.keys():
             
@@ -105,43 +105,13 @@ def flair_counter():
 print('Comencing scrape of '+ str(sub_to_scrape)+ '...')
 
 scrape_posts(posts)
-number_of_unique_users_scraped = len(comment_username_flair_dict)
+number_of_unique_users_scraped = len(comment_username_dict)
 
 print('The number of users scraped: ' + str(number_of_unique_users_scraped))
-#print('The number of users with 🦍 Voted ✅ flairs is:' + str(vote_counter())+'\n')
+comment_list = [comment for comment in comment_username_dict.values()]
+print(Counter(comment_list).most_common(10))
 
 
 
-print(Counter(comment_username_flair_dict.values()).most_common(5))
-
-'''
-#draw pie chart of user flairs
-pie_flair = comment_username_flair_dict
-Counter()
-
-labels, data = zip(*(Counter(pie_flair.values()).most_common(5)))
-#  print(labels)
-
-fig, ax = plt.subplots(figsize=(6, 3), subplot_kw=dict(aspect="equal"))
-
-def func(pct, allvals):
-    absolute = int(pct/100.*np.sum(allvals))
-    return "{:.1f}%".format(pct, absolute)
-
-
-wedges, texts, autotexts = ax.pie(data, autopct=lambda pct: func(pct, data),
-                                  textprops=dict(color="w"))
-
-ax.legend(wedges, labels,
-          title="Flair",
-          loc="center left",
-          bbox_to_anchor=(1, 0, 0.5, 1))
-
-plt.setp(autotexts, size=8, weight="bold")
-
-ax.set_title("Top 3 Flairs")
-fig.tight_layout()
-plt.show()
-'''
 
 
